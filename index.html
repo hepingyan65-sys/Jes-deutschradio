@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jes’ Röhrenradio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --room:#2a221c; --room2:#3a2e24;
+  --walnut:#5b351d; --walnut-dark:#2e190c; --walnut-hi:#8a5630;
+  --brass:#c9a25e; --brass-dark:#7c5f2c;
+  --glass:#f0d58e; --glass-dim:#b89a58; --ink:#3b2412;
+  --eye:#5dff9a; --cloth:#8c7451;
+  --text:#efe2c8; --muted:#b8a687;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:radial-gradient(ellipse at 50% 30%, var(--room2), var(--room) 70%);
+  font-family:"Jost", "Futura", "Avenir Next", system-ui, sans-serif;
+  color:var(--text);
+  display:flex;flex-direction:column;align-items:center;
+  padding:max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+}
+.radio{
+  width:min(760px,100%);
+  background:
+    repeating-linear-gradient(92deg, rgba(0,0,0,.08) 0 2px, transparent 2px 9px),
+    linear-gradient(180deg, var(--walnut-hi), var(--walnut) 18%, var(--walnut) 80%, var(--walnut-dark));
+  border-radius:38px 38px 22px 22px;
+  padding:26px 28px 22px;
+  box-shadow: inset 0 2px 0 rgba(255,220,170,.25), inset 0 -6px 12px rgba(0,0,0,.4), 0 30px 60px rgba(0,0,0,.55);
+  position:relative;
+}
+.brand{
+  text-align:center;font-family:"Playfair Display",Georgia,serif;font-style:italic;
+  color:var(--brass);font-size:1.35rem;letter-spacing:.04em;margin:0 0 14px;
+  text-shadow:0 1px 0 rgba(0,0,0,.6);
+}
+.top{display:grid;grid-template-columns:1fr 92px;gap:18px;align-items:stretch}
+.speaker{
+  border-radius:16px;min-height:150px;
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.06) 0 1px, transparent 1px 4px),
+    var(--cloth);
+  box-shadow: inset 0 0 0 4px var(--brass-dark), inset 0 6px 18px rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+}
+.speaker span{font-family:"Playfair Display",serif;font-style:italic;color:rgba(40,25,10,.55);font-size:1.1rem}
+.eyebox{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.eye{
+  width:62px;height:62px;border-radius:50%;
+  background:radial-gradient(circle, #0b1a10 0 22%, #0f2a18 23% 100%);
+  box-shadow: 0 0 0 5px var(--brass-dark), inset 0 0 10px #000;
+  position:relative;overflow:hidden;transition:box-shadow .6s;
+}
+.eye::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg, var(--eye) 0 var(--open,0deg), transparent var(--open,0deg) calc(360deg - var(--open,0deg)), var(--eye) calc(360deg - var(--open,0deg)));
+  -webkit-mask:radial-gradient(circle, transparent 0 24%, #000 25%);mask:radial-gradient(circle, transparent 0 24%, #000 25%);
+  opacity:.0;transition:opacity .6s;
+}
+.on .eye::before{opacity:.85}
+.on .eye{box-shadow:0 0 0 5px var(--brass-dark), 0 0 22px rgba(93,255,154,.35), inset 0 0 10px #000}
+.eyebox small{color:var(--muted);font-size:.72rem;text-align:center}
+
+/* Dial */
+.dial{
+  margin-top:18px;border-radius:12px;padding:16px 18px 12px;
+  background:linear-gradient(180deg, #4a3215, #2b1b0a);
+  box-shadow: inset 0 0 0 3px var(--brass), inset 0 0 0 6px var(--walnut-dark);
+}
+.glass{
+  position:relative;height:118px;border-radius:6px;overflow:hidden;
+  background:linear-gradient(180deg, var(--glass-dim), #8d733d);
+  transition:background .6s, box-shadow .6s;
+}
+.on .glass{background:linear-gradient(180deg, #fbe7ad, var(--glass));box-shadow:0 0 30px rgba(255,210,120,.35)}
+.scale{position:absolute;left:4%;right:4%;top:14px;height:20px;
+  background:repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 10px);
+  -webkit-mask:linear-gradient(#000 0 40%, transparent 40%);mask:linear-gradient(#000 0 40%, transparent 40%);opacity:.6}
+.scale.long{background:repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 50px);-webkit-mask:none;mask:none;height:14px;opacity:.75}
+.stations{position:absolute;left:4%;right:4%;top:40px;bottom:10px}
+.st{
+  position:absolute;transform:translateX(-50%);
+  background:none;border:0;padding:4px 2px;cursor:pointer;
+  font:500 .8rem/1.1 "Jost",sans-serif;color:var(--ink);opacity:.62;
+  writing-mode:vertical-rl;transform:translateX(-50%) rotate(180deg);
+  white-space:nowrap;height:100%;
+}
+.st:hover,.st.active{opacity:1}
+.st.active{font-weight:600}
+.st:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:3px}
+.needle{
+  position:absolute;top:6px;bottom:6px;width:3px;margin-left:-1.5px;
+  background:#b31b0f;box-shadow:0 0 6px rgba(179,27,15,.6);
+  transition:left .9s cubic-bezier(.3,.7,.2,1);pointer-events:none;
+}
+.readout{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:10px;color:var(--brass);font-size:.85rem;flex-wrap:wrap}
+.readout b{font-weight:500;color:var(--text);font-size:1rem}
+
+/* Controls */
+.controls{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:12px}
+.knobwrap{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:.75rem}
+.knob{
+  width:78px;height:78px;border-radius:50%;border:0;cursor:grab;position:relative;
+  background:radial-gradient(circle at 35% 30%, #f3d79a, var(--brass) 40%, var(--brass-dark) 100%);
+  box-shadow:0 6px 14px rgba(0,0,0,.55), inset 0 -3px 6px rgba(0,0,0,.35);
+  touch-action:none;
+}
+.knob::after{content:"";position:absolute;left:50%;top:7px;width:4px;height:18px;margin-left:-2px;border-radius:2px;background:var(--walnut-dark);
+  transform-origin:50% 32px;transform:rotate(var(--rot,0deg))}
+.knob:focus-visible,.keys button:focus-visible,.drawer summary:focus-visible,a:focus-visible{outline:2px solid var(--glass);outline-offset:3px}
+.keys{display:flex;gap:6px}
+.keys button{
+  font:500 .85rem "Jost",sans-serif;color:var(--ink);cursor:pointer;
+  background:linear-gradient(180deg,#f4ead2,#cdbd98);border:0;border-radius:4px 4px 8px 8px;
+  padding:12px 14px 16px;min-width:64px;
+  box-shadow:0 5px 0 #8d7b55, 0 8px 12px rgba(0,0,0,.4);transition:transform .08s, box-shadow .08s;
+}
+.keys button[aria-pressed="true"]{transform:translateY(4px);box-shadow:0 1px 0 #8d7b55, 0 3px 6px rgba(0,0,0,.4)}
+.status{margin-top:14px;text-align:center;color:var(--muted);font-size:.85rem;min-height:1.3em}
+.status.err{color:#ffb39a}
+
+/* Drawer */
+.drawer{width:min(760px,100%);margin-top:20px;background:rgba(0,0,0,.22);border-radius:14px;border:1px solid rgba(201,162,94,.3)}
+.drawer summary{cursor:pointer;padding:14px 18px;color:var(--brass);font-weight:500;list-style:none;display:flex;justify-content:space-between}
+.drawer summary::-webkit-details-marker{display:none}
+.drawer summary::after{content:"＋"}
+.drawer[open] summary::after{content:"－"}
+.drawer .inner{padding:0 18px 18px;line-height:1.65;color:var(--text)}
+.drawer p{margin:.3em 0 .9em;color:var(--muted);max-width:62ch}
+.links{display:flex;flex-wrap:wrap;gap:10px}
+.links a{color:var(--ink);background:var(--glass);text-decoration:none;padding:9px 14px;border-radius:8px;font-weight:500}
+.links a:hover{background:#ffe6a6}
+@media (max-width:560px){
+  .top{grid-template-columns:1fr 74px}
+  .eye{width:50px;height:50px}
+  .knob{width:62px;height:62px}
+  .knob::after{transform-origin:50% 24px;height:14px}
+  .keys button{min-width:48px;padding:10px 8px 14px;font-size:.75rem}
+  .st{font-size:.68rem}
+}
+@media (prefers-reduced-motion:reduce){.needle,.eye,.eye::before,.glass{transition:none}}
+</style>
+</head>
+<body>
+<main class="radio" id="radio">
+  <h1 class="brand">Jes’ Röhrenradio</h1>
+  <div class="top">
+    <div class="speaker" aria-hidden="true"><span>Klangvoll</span></div>
+    <div class="eyebox">
+      <div class="eye" id="eye" aria-hidden="true"></div>
+      <small id="eyeLabel">aus</small>
+    </div>
+  </div>
+
+  <section class="dial" aria-label="Senderwahl">
+    <div class="glass">
+      <div class="scale"></div><div class="scale long"></div>
+      <div class="stations" id="stations"></div>
+      <div class="needle" id="needle" style="left:4%"></div>
+    </div>
+    <div class="readout">
+      <span>Sender: <b id="stName">—</b></span>
+      <span>Berlin <b id="berlin">--:--</b> · Tokio <b id="tokyo">--:--</b></span>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="knobwrap">
+      <button class="knob" id="volKnob" aria-label="Lautstärke" style="--rot:90deg"></button>
+      Lautstärke
+    </div>
+    <div class="keys">
+      <button id="btnPower" aria-pressed="false">Ein</button>
+      <button id="btnPrev" aria-label="Vorheriger Sender">◂</button>
+      <button id="btnNext" aria-label="Nächster Sender">▸</button>
+    </div>
+    <div class="knobwrap">
+      <button class="knob" id="tuneKnob" aria-label="Sender drehen"></button>
+      Senderwahl
+    </div>
+  </div>
+  <div class="status" id="status" role="status">Drehe am rechten Knopf oder tippe auf einen Sendernamen.</div>
+</main>
+
+<details class="drawer" id="drawer">
+  <summary>Sendungen verpasst? · Website &amp; Archiv</summary>
+  <div class="inner">
+    <p id="drawerText">Wähle zuerst einen Sender.</p>
+    <div class="links" id="links"></div>
+  </div>
+</details>
+
+<audio id="audio" preload="none"></audio>
+
+<script>
+// Deutschlandradio-Streams: feste URLs. Andere ARD-Sender: werden beim Einschalten über Radio Browser gesucht.
+const STATIONS = [
+  { name:"Deutschlandfunk", url:"https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", site:"https://www.deutschlandfunk.de" },
+  { name:"DLF Kultur", url:"https://st02.sslstream.dlf.de/dlf/02/128/mp3/stream.mp3", site:"https://www.deutschlandfunkkultur.de" },
+  { name:"DLF Nova", url:"https://st03.sslstream.dlf.de/dlf/03/128/mp3/stream.mp3", site:"https://www.deutschlandfunknova.de" },
+  { name:"BR-Klassik", query:["BR-KLASSIK","BR Klassik"], site:"https://www.br-klassik.de" },
+  { name:"WDR 3", query:["WDR 3"], site:"https://www1.wdr.de/radio/wdr3/" },
+  { name:"NDR Kultur", query:["NDR Kultur"], site:"https://www.ndr.de/kultur/" },
+  { name:"SWR Kultur", query:["SWR Kultur","SWR2"], site:"https://www.swr.de/swrkultur/" },
+  { name:"MDR Klassik", query:["MDR KLASSIK","MDR Klassik"], site:"https://www.mdr.de/klassik/" },
+  { name:"rbb radio3", query:["rbb radio3","radio3"], site:"https://www.radiodrei.de" },
+  { name:"hr2-kultur", query:["hr2-kultur","hr2"], site:"https://www.hr2.de" },
+];
+const AUDIOTHEK = "https://www.ardaudiothek.de";
+const RB_HOSTS = ["https://de1.api.radio-browser.info","https://de2.api.radio-browser.info","https://fi1.api.radio-browser.info"];
+
+const $ = id => document.getElementById(id);
+const audio=$("audio"), radio=$("radio"), statusEl=$("status");
+let idx=0, on=false, volume=0.7, tuneTimer=null;
+
+// Skala aufbauen
+const pos = i => 4 + (92 * (i + 0.5) / STATIONS.length);
+STATIONS.forEach((s,i)=>{
+  const b=document.createElement("button");
+  b.className="st"; b.textContent=s.name;
+  b.style.left=((i+0.5)/STATIONS.length*100)+"%";
+  b.onclick=()=>select(i,true);
+  $("stations").appendChild(b);
+});
+
+function setStatus(t,err=false){statusEl.textContent=t;statusEl.classList.toggle("err",err)}
+
+function select(i, userAction=false){
+  idx=(i+STATIONS.length)%STATIONS.length;
+  const s=STATIONS[idx];
+  $("needle").style.left=pos(idx)+"%";
+  document.querySelectorAll(".st").forEach((b,j)=>b.classList.toggle("active",j===idx));
+  $("stName").textContent=s.name;
+  $("tuneKnob").style.setProperty("--rot", (idx/(STATIONS.length-1)*270-135)+"deg");
+  renderDrawer();
+  if(on){ clearTimeout(tuneTimer); tuneTimer=setTimeout(play, userAction?250:500); }
+}
+
+async function resolveUrl(s){
+  if(s.url) return s.url;
+  if(s._resolved) return s._resolved;
+  for(const q of s.query){
+    for(const host of RB_HOSTS){
+      try{
+        const r=await fetch(`${host}/json/stations/search?name=${encodeURIComponent(q)}&countrycode=DE&order=votes&reverse=true&limit=5&hidebroken=true`);
+        if(!r.ok) continue;
+        const list=await r.json();
+        const hit=list.find(x=>x.url_resolved && x.url_resolved.startsWith("https")) || list.find(x=>x.url_resolved);
+        if(hit){ s._resolved=hit.url_resolved; return hit.url_resolved; }
+        break;
+      }catch(e){ /* nächsten Server versuchen */ }
+    }
+  }
+  return null;
+}
+
+async function play(){
+  const s=STATIONS[idx];
+  setStatus(`Suche ${s.name} …`);
+  radio.classList.remove("on");
+  const url=await resolveUrl(s);
+  if(!url){ setStatus(`${s.name} wurde nicht gefunden. Öffne die Website unten im Archiv-Fach.`,true); return; }
+  if(STATIONS[idx]!==s) return; // inzwischen weitergedreht
+  audio.src=url; audio.volume=volume;
+  try{
+    await audio.play();
+    radio.classList.add("on"); $("eyeLabel").textContent="Empfang";
+    setStatus(`Live: ${s.name}`);
+  }catch(e){
+    setStatus(`${s.name} lässt sich gerade nicht abspielen. Versuch es nochmal oder öffne die Website.`,true);
+  }
+}
+
+function power(){
+  on=!on;
+  $("btnPower").setAttribute("aria-pressed",on);
+  $("btnPower").textContent=on?"Aus":"Ein";
+  if(on){ play(); }
+  else{ audio.pause(); audio.removeAttribute("src"); audio.load(); radio.classList.remove("on"); $("eyeLabel").textContent="aus"; setStatus("Ausgeschaltet."); }
+}
+
+// magisches Auge flackert leicht beim Empfang
+let t=0;(function anim(){t+=0.05;
+  const base=radio.classList.contains("on")? 70+volume*80 : 0;
+  $("eye").style.setProperty("--open",(base+Math.sin(t)*6+Math.sin(t*2.7)*4)+"deg");
+  requestAnimationFrame(anim)})();
+
+audio.addEventListener("error",()=>{ if(on) setStatus("Verbindung unterbrochen. Drück ◂ ▸ oder schalte neu ein.",true); radio.classList.remove("on"); });
+audio.addEventListener("waiting",()=>{ if(on) setStatus("Puffert …"); });
+audio.addEventListener("playing",()=>{ radio.classList.add("on"); setStatus(`Live: ${STATIONS[idx].name}`); });
+
+$("btnPower").onclick=power;
+$("btnPrev").onclick=()=>select(idx-1,true);
+$("btnNext").onclick=()=>select(idx+1,true);
+
+// Drehknöpfe (ziehen, Mausrad, Pfeiltasten)
+function knob(el, onStep){
+  let startY=null, acc=0;
+  el.addEventListener("pointerdown",e=>{startY=e.clientY;acc=0;el.setPointerCapture(e.pointerId)});
+  el.addEventListener("pointermove",e=>{ if(startY===null)return; const d=startY-e.clientY; if(Math.abs(d-acc)>22){onStep(d>acc?1:-1);acc=d;} });
+  el.addEventListener("pointerup",()=>startY=null);
+  el.addEventListener("wheel",e=>{e.preventDefault();onStep(e.deltaY<0?1:-1)},{passive:false});
+  el.addEventListener("keydown",e=>{
+    if(["ArrowUp","ArrowRight"].includes(e.key)){e.preventDefault();onStep(1)}
+    if(["ArrowDown","ArrowLeft"].includes(e.key)){e.preventDefault();onStep(-1)}
+  });
+}
+knob($("tuneKnob"), d=>select(idx+d,true));
+knob($("volKnob"), d=>{
+  volume=Math.min(1,Math.max(0,volume+d*0.08)); audio.volume=volume;
+  $("volKnob").style.setProperty("--rot",(volume*270-135)+"deg");
+  setStatus(`Lautstärke ${Math.round(volume*100)} %`);
+});
+$("volKnob").style.setProperty("--rot",(volume*270-135)+"deg");
+
+function renderDrawer(){
+  const s=STATIONS[idx];
+  $("drawerText").textContent=`${s.name} hat eigene Seiten mit Programm und Nachhören. Viele Sendungen findest du außerdem in der ARD Audiothek.`;
+  $("links").innerHTML="";
+  [[`Website von ${s.name}`, s.site],["ARD Audiothek",AUDIOTHEK]].forEach(([label,href])=>{
+    const a=document.createElement("a"); a.href=href; a.target="_blank"; a.rel="noopener"; a.textContent=label; $("links").appendChild(a);
+  });
+}
+
+function clock(){
+  const f=tz=>new Date().toLocaleTimeString("de-DE",{timeZone:tz,hour:"2-digit",minute:"2-digit"});
+  $("berlin").textContent=f("Europe/Berlin"); $("tokyo").textContent=f("Asia/Tokyo");
+}
+clock(); setInterval(clock,15000);
+select(0);
+</script>
+</body>
+</html>
